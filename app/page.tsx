@@ -1,189 +1,145 @@
 import Link from "next/link"
 import Image from "next/image"
-import { BlocksIcon as GrassBlock, Newspaper, Bug, ChevronRight } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Book, Map, Sword, Server } from "lucide-react"
+import { ServerStatus } from "@/components/server-status"
 
 export default function Home() {
   return (
-    <div>
-      {/* Hero Section with Background Image */}
-      <div className="relative h-[600px] w-full">
-        <Image src="/images/murkcraft-hero.png" alt="MurkCraft Server" fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-black/30">
-          <div className="container mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
-            {/* Removed MurkCraft Wiki text as the logo is visible in the hero image */}
-            <p className="text-xl md:text-2xl text-white/90 max-w-2xl drop-shadow-md mt-32">
-              Your ultimate resource for plugins, updates, and server information
-            </p>
-            <div className="flex flex-wrap gap-4 mt-8 justify-center">
-              <Link href="/plugins">
-                <Button size="lg" className="text-lg">
-                  Explore Plugins
-                </Button>
+    <main className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="relative w-full h-[500px] md:h-[600px] overflow-hidden">
+        <Image src="/images/murkcraft-hero.png" alt="MurkCraft Server" fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/90 flex flex-col items-center justify-end pb-16 text-center px-4">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">MurkCraft Wiki</h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8">
+            Your comprehensive guide to everything on the MurkCraft server
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button asChild size="lg">
+              <Link href="/enchantments">Get Started</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/plugins">Plugins Wiki</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/changelog">Changelog</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/report">Report Bug</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="https://discord.gg/murkcraft" target="_blank">
+                Join Discord
               </Link>
-              <Link href="/getting-started">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-lg bg-black/30 text-white border-white/50 hover:bg-black/50"
-                >
-                  Get Started
-                </Button>
-              </Link>
-            </div>
+            </Button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <GrassBlock className="w-10 h-10 mb-2 text-green-500" />
-              <CardTitle>Plugins</CardTitle>
-              <CardDescription>Explore all the plugins running on our server</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Learn about plugin features, commands, and how to make the most of them during gameplay.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Link href="/plugins" className="w-full">
-                <Button className="w-full">View Plugins</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <Newspaper className="w-10 h-10 mb-2 text-blue-500" />
-              <CardTitle>Updates</CardTitle>
-              <CardDescription>Stay informed about the latest server changes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Check out recent updates, upcoming features, and important announcements for MurkCraft.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Link href="/updates" className="w-full">
-                <Button className="w-full">View Updates</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          <Card className="transition-all hover:shadow-lg">
-            <CardHeader>
-              <Bug className="w-10 h-10 mb-2 text-red-500" />
-              <CardTitle>Bug Reports</CardTitle>
-              <CardDescription>Help us improve by reporting issues</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Found a bug? Submit a detailed report to help us fix issues and improve the server experience.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Link href="/bug-report" className="w-full">
-                <Button className="w-full">Report a Bug</Button>
-              </Link>
-            </CardFooter>
-          </Card>
+      {/* Server Status Section */}
+      <section className="container py-8 md:py-12">
+        <div className="flex flex-col gap-4 mb-6">
+          <h2 className="text-3xl font-bold">Server Status</h2>
+          <p className="text-muted-foreground">
+            Check the current status of our Minecraft servers and connect with one click.
+          </p>
         </div>
+        <ServerStatus />
+      </section>
 
-        <div className="bg-muted rounded-lg p-6 mb-12">
-          <h2 className="text-2xl font-bold mb-4">Welcome to MurkCraft!</h2>
-          <p className="mb-4">
-            MurkCraft is a community-driven Minecraft server focused on providing a unique and enjoyable gaming
-            experience. Our server features custom plugins, regular events, and a friendly community.
-          </p>
-          <p className="mb-4">
-            This wiki serves as your go-to resource for everything related to our server. Whether you're a new player
-            looking to learn about our plugins or a veteran wanting to stay updated with the latest changes, you'll find
-            all the information you need here.
-          </p>
-          <div className="flex justify-center mt-6">
-            <Link href="/getting-started">
-              <Button variant="outline" className="flex items-center gap-2">
-                Getting Started Guide
-                <ChevronRight className="h-4 w-4" />
+      {/* Features Section */}
+      <section className="container py-12 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader>
+              <Sword className="h-10 w-10 mb-2 text-primary" />
+              <CardTitle>Custom Enchantments</CardTitle>
+              <CardDescription>Discover all the unique enchantments available on the server</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Explore armor, weapon, tool, bow, and fishing enchantments that go beyond vanilla Minecraft.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/enchantments">View Enchantments</Link>
               </Button>
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Server Rules</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Be respectful to all players</li>
-                <li>No griefing or stealing</li>
-                <li>No excessive profanity or inappropriate content</li>
-                <li>No exploiting bugs or using hacks</li>
-                <li>Have fun and enjoy the community!</li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/rules" className="text-sm text-muted-foreground hover:underline">
-                View complete rules
-              </Link>
             </CardFooter>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Quick Links</CardTitle>
+              <Book className="h-10 w-10 mb-2 text-primary" />
+              <CardTitle>ValhallaMMO</CardTitle>
+              <CardDescription>Master the RPG skills and progression system</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="https://discord.gg/RPD9Cy4VA5"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm hover:underline"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                    Join our Discord
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/vote" className="flex items-center gap-2 text-sm hover:underline">
-                    <ChevronRight className="h-4 w-4" />
-                    Vote for our server
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/donate" className="flex items-center gap-2 text-sm hover:underline">
-                    <ChevronRight className="h-4 w-4" />
-                    Support MurkCraft
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/staff" className="flex items-center gap-2 text-sm hover:underline">
-                    <ChevronRight className="h-4 w-4" />
-                    Meet the staff team
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/faq" className="flex items-center gap-2 text-sm hover:underline">
-                    <ChevronRight className="h-4 w-4" />
-                    Frequently Asked Questions
-                  </Link>
-                </li>
-              </ul>
+              <p className="text-muted-foreground">
+                Learn about the 14 different skills, leveling, custom items, and various mechanics to enhance your
+                gameplay.
+              </p>
             </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/valhalla-mmo">View ValhallaMMO Guide</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Map className="h-10 w-10 mb-2 text-primary" />
+              <CardTitle>Lands System</CardTitle>
+              <CardDescription>Claim land and build your empire</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Understand how to claim land, manage permissions, create nations, wage wars, and establish camps.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/lands">View Lands Guide</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Server className="h-10 w-10 mb-2 text-primary" />
+              <CardTitle>Our Servers</CardTitle>
+              <CardDescription>Connect to our different game modes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Explore our Survival, Skyblock, and Adventure servers, each with unique features and gameplay.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/servers">View Servers</Link>
+              </Button>
+            </CardFooter>
           </Card>
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-muted py-12">
+        <div className="container text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+            Connect to MurkCraft today and experience a unique Minecraft server with custom enchantments, RPG
+            progression, and land claiming.
+          </p>
+          <Button size="lg" asChild>
+            <Link href="minecraft://connect/panel.murkpvp.com">Join Server: panel.murkpvp.com</Link>
+          </Button>
+        </div>
+      </section>
+    </main>
   )
 }
-
