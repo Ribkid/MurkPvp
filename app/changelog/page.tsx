@@ -19,9 +19,10 @@ export default function ChangelogPage() {
       </div>
 
       <Tabs defaultValue="latest" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="latest">Latest Updates</TabsTrigger>
           <TabsTrigger value="major">Major Updates</TabsTrigger>
+          <TabsTrigger value="coming-soon">Coming Soon</TabsTrigger>
           <TabsTrigger value="archive">Archive</TabsTrigger>
         </TabsList>
 
@@ -29,8 +30,46 @@ export default function ChangelogPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Server Update v3.5.0</CardTitle>
+                <CardTitle>Server Update - April 2025</CardTitle>
                 <Badge>Latest</Badge>
+              </div>
+              <CardDescription>Released on April 22, 2025</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Survival Server Updates</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Added four new elite mob dungeons</li>
+                  <li>Added three new types of better structures that can form in the world</li>
+                  <li>Added warps to the Primus world</li>
+                  <li>Added new achievements</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium mb-2">Skyblock Server Updates</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Reduced prices across the server</li>
+                  <li>Fixed minions functionality and performance issues</li>
+                  <li>Fixed crates system and rewards</li>
+                  <li>Continuing to work to make the game more affordable</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium mb-2">Adventure Server Status</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Still running at version 1.21</li>
+                  <li>Update to version 1.21.4 expected in the next 1-2 weeks</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Server Update v3.5.0</CardTitle>
               </div>
               <CardDescription>Released on October 15, 2023</CardDescription>
             </CardHeader>
@@ -157,6 +196,59 @@ export default function ChangelogPage() {
                   <li>Implemented new economy system</li>
                   <li>Added custom crafting recipes</li>
                   <li>Introduced player shops system</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="coming-soon" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Coming Soon: Cross-Server Economy</CardTitle>
+                <Badge variant="outline">Planned</Badge>
+              </div>
+              <CardDescription>Expected release: May 2025</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Cross-Server Currency</h3>
+                <p className="mb-4">
+                  We're excited to announce our upcoming cross-server economy system that will allow players to earn and
+                  spend Murk Coins across different server modes.
+                </p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Earn Murk Coins on the Survival server</li>
+                  <li>Spend your earned coins on the Skyblock server</li>
+                  <li>Unified economy across all MurkCraft servers</li>
+                  <li>Transfer items and resources between game modes</li>
+                  <li>Special cross-server marketplace</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Coming Soon: Adventure Server Update</CardTitle>
+                <Badge variant="outline">In Progress</Badge>
+              </div>
+              <CardDescription>Expected release: May 2025</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Version 1.21.4 Update</h3>
+                <p className="mb-4">
+                  The Adventure server will be updated to version 1.21.4 in the next 1-2 weeks, bringing it in line with
+                  our Survival and Skyblock servers.
+                </p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Full compatibility with the latest Minecraft features</li>
+                  <li>New custom quests and adventures</li>
+                  <li>Improved performance and stability</li>
+                  <li>Integration with the cross-server economy system</li>
                 </ul>
               </div>
             </CardContent>

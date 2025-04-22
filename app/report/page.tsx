@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { supabase } from "@/lib/supabase"
 
 export default function ReportPage() {
   const [submitted, setSubmitted] = useState(false)
@@ -30,22 +29,23 @@ export default function ReportPage() {
     setError("")
 
     try {
-      // Insert the bug report into the database
-      const { error } = await supabase.from("bug_reports").insert({
-        username: formData.username,
-        category: formData.category,
-        description: formData.description,
-        location: formData.location,
-        status: "pending",
-        priority: "medium",
+      // Simple fetch to API endpoint
+      const response = await fetch("/api/submit-bug-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       })
 
-      if (error) {
-        throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to submit bug report")
       }
 
       setSubmitted(true)
     } catch (err: any) {
+      console.error("Error submitting bug report:", err)
       setError(err.message || "Failed to submit bug report")
     } finally {
       setIsLoading(false)
