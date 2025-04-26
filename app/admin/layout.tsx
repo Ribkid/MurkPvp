@@ -5,8 +5,9 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { AdminNav } from "@/components/admin-nav"
-import { supabase } from "@/lib/supabase"
-import { setupDatabase } from "@/lib/db-setup"
+import { checkAuthSession } from "@/lib/auth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertTriangle } from "lucide-react"
 
 export default function AdminLayout({
   children,
@@ -15,60 +16,57 @@ export default function AdminLayout({
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Check if user is authenticated first
-        const { data } = await supabase.auth.getSession()
-        const isAuth = !!data.session
+    // Check authentication status
+    const isAuth = checkAuthSession()
+    setIsAuthenticated(isAuth)
 
-        setIsAuthenticated(isAuth)
-
-        // Only try to set up the database if we're on the admin page
-        // This prevents unnecessary database setup attempts on every page load
-        if (pathname === "/admin") {
-          // Try to set up the database if needed
-          await setupDatabase().catch((err) => {
-            console.error("Database setup error:", err)
-          })
-        }
-
-        // If not authenticated and not on login page, redirect to login
-        if (!isAuth && pathname !== "/admin") {
-          router.push("/admin")
-        }
-      } catch (error) {
-        console.error("Auth check error:", error)
-      } finally {
-        setIsLoading(false)
-      }
+    // If not authenticated and not on login page, redirect to login
+    if (!isAuth && pathname !== "/admin") {
+      router.push("/admin")
     }
 
-    checkAuth()
+    setIsLoading(false)
 
-    // Set up auth state change listener
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      const isAuth = !!session
-      setIsAuthenticated(isAuth)
-
-      if (!isAuth && pathname !== "/admin") {
+    // Check auth status every minute
+    const interval = setInterval(() => {
+      const currentAuth = checkAuthSession()
+      if (isAuthenticated && !currentAuth) {
+        // Session expired
         router.push("/admin")
       }
-    })
+    }, 60000)
 
-    return () => {
-      authListener.subscription.unsubscribe()
-    }
-  }, [pathname, router])
+    return () => clearInterval(interval)
+  }, [pathname, router, isAuthenticated])
 
   // Show loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error && pathname !== "/admin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <button
+          onClick={() => router.push("/admin")}
+          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+        >
+          Return to Login
+        </button>
       </div>
     )
   }

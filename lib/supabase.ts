@@ -16,37 +16,46 @@ export type BugReport = {
   category: string
   description: string
   location: string | null
-  status: "pending" | "in-progress" | "resolved" | "closed"
+  status: "pending" | "in-progress" | "resolved"
   priority: "low" | "medium" | "high" | "critical"
   created_at: string
-  updated_at: string | null
   assigned_to: string | null
 }
 
 // Create a single supabase client for interacting with your database
-let supabaseInstance: ReturnType<typeof createClient> | null = null
+export const supabase =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    : null
 
-try {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+export const isSupabaseInitialized = () => !!supabase
 
-  if (supabaseUrl && supabaseAnonKey) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false, // Don't persist the session in localStorage
-      },
+// Helper function for login
+export async function handleLogin(email: string, password: string) {
+  try {
+    if (!supabase) {
+      throw new Error("Supabase client not initialized")
+    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
     })
-    console.log("Supabase client initialized successfully")
-  } else {
-    console.warn("Missing Supabase environment variables")
+
+    if (error) throw error
+    return data
+  } catch (error: any) {
+    console.error("Error logging in:", error.message)
+    throw error
   }
-} catch (error) {
-  console.error("Error initializing Supabase client:", error)
 }
 
-export const supabase = supabaseInstance
-
-// Function to check if Supabase is properly initialized
-export function isSupabaseInitialized() {
-  return !!supabase
+export async function ensureTablesExist() {
+  if (!supabase) {
+    throw new Error("Supabase client not initialized")
+  }
+  // Placeholder function to ensure tables exist
+  // In a real-world scenario, this function would check for the existence of the
+  // 'staff' and 'bug_reports' tables and create them if they don't exist.
+  // For simplicity, we'll just log a message.
+  console.log("Ensuring database tables exist...")
 }

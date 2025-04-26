@@ -1,4 +1,4 @@
--- Create the bug_reports table if it doesn't exist
+-- Create the bug_reports table
 CREATE TABLE IF NOT EXISTS public.bug_reports (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   username TEXT NOT NULL,
@@ -9,12 +9,13 @@ CREATE TABLE IF NOT EXISTS public.bug_reports (
   priority TEXT NOT NULL DEFAULT 'medium',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE,
-  assigned_to UUID
+  assigned_to TEXT
 );
 
--- Add RLS policies
+-- Enable Row Level Security
 ALTER TABLE public.bug_reports ENABLE ROW LEVEL SECURITY;
 
+-- Create policies
 -- Allow anyone to insert bug reports
 CREATE POLICY IF NOT EXISTS "Allow anyone to insert bug reports"
   ON public.bug_reports
@@ -35,3 +36,14 @@ CREATE POLICY IF NOT EXISTS "Allow authenticated users to update bug reports"
   FOR UPDATE
   TO authenticated
   USING (true);
+
+-- Allow authenticated users to delete bug reports
+CREATE POLICY IF NOT EXISTS "Allow authenticated users to delete bug reports"
+  ON public.bug_reports
+  FOR DELETE
+  TO authenticated
+  USING (true);
+
+-- Grant permissions
+GRANT ALL ON public.bug_reports TO authenticated;
+GRANT ALL ON public.bug_reports TO service_role;

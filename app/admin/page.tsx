@@ -2,14 +2,15 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+import { validateCredentials, setAuthSession, checkAuthSession } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("")
@@ -18,37 +19,26 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Check if already logged in
+  useEffect(() => {
+    if (checkAuthSession()) {
+      router.push("/admin/dashboard")
+    }
+  }, [router])
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        throw error
-      }
-
-      if (data.user) {
-        // Check if user is in staff table
-        const { data: staffData, error: staffError } = await supabase
-          .from("staff")
-          .select("role")
-          .eq("email", email)
-          .single()
-
-        if (staffError) {
-          // If user is not in staff table, sign them out
-          await supabase.auth.signOut()
-          throw new Error("You are not authorized to access the admin panel")
-        }
-
-        // Redirect to dashboard
+      // Simple client-side validation
+      if (validateCredentials(email, password)) {
+        // Set auth session with email
+        setAuthSession(email)
         router.push("/admin/dashboard")
+      } else {
+        throw new Error("Invalid email or password")
       }
     } catch (err: any) {
       console.error("Login error:", err)
@@ -66,9 +56,10 @@ export default function AdminLoginPage() {
           <CardDescription>Sign in to access the MurkCraft admin panel</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4">
             {error && (
               <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -79,7 +70,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
+                placeholder="acalrhys@gmail.com"
                 required
               />
             </div>
@@ -99,7 +90,7 @@ export default function AdminLoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center text-sm text-gray-500">
-          Contact an administrator if you need access
+          <p>Contact an administrator if you need access</p>
         </CardFooter>
       </Card>
     </div>

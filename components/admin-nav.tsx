@@ -4,29 +4,19 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { LayoutDashboard, AlertCircle, Users, Settings, LogOut } from "lucide-react"
-import { supabase } from "@/lib/supabase"
-import { useState, useEffect } from "react"
+import { LayoutDashboard, AlertCircle, Users, Settings, LogOut, Terminal } from "lucide-react"
+import { clearAuthSession } from "@/lib/auth"
 
 export function AdminNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const [username, setUsername] = useState("")
 
-  useEffect(() => {
-    // Get the current user's username
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (data.user) {
-        setUsername(data.user.user_metadata.username || data.user.email || "")
-      }
-    }
+  // Get admin email from localStorage if available
+  const adminEmail =
+    typeof window !== "undefined" ? localStorage.getItem("adminEmail") || "Staff Member" : "Staff Member"
 
-    getUser()
-  }, [])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
+  const handleLogout = () => {
+    clearAuthSession()
     router.push("/admin")
   }
 
@@ -47,6 +37,11 @@ export function AdminNav() {
       icon: <Users className="mr-2 h-4 w-4" />,
     },
     {
+      title: "Server Commands",
+      href: "/admin/server-commands",
+      icon: <Terminal className="mr-2 h-4 w-4" />,
+    },
+    {
       title: "Settings",
       href: "/admin/settings",
       icon: <Settings className="mr-2 h-4 w-4" />,
@@ -63,12 +58,10 @@ export function AdminNav() {
       </div>
       <ScrollArea className="h-[calc(100vh-64px)]">
         <div className="flex flex-col gap-2 p-4">
-          {username && (
-            <div className="mb-4 px-2 py-1.5">
-              <p className="text-sm font-medium">Logged in as</p>
-              <p className="text-sm text-muted-foreground">{username}</p>
-            </div>
-          )}
+          <div className="mb-4 px-2 py-1.5">
+            <p className="text-sm font-medium">Logged in as</p>
+            <p className="text-sm text-muted-foreground">{adminEmail}</p>
+          </div>
           <div className="py-2">
             <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight">Administration</h2>
             <div className="space-y-1">

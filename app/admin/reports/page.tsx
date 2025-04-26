@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Search, CheckCircle, Clock, AlertCircle } from "lucide-react"
+import { MoreHorizontal, Search, CheckCircle, Clock, AlertCircle, RefreshCw } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,53 +18,125 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from "@/lib/supabase"
-import type { BugReport, Staff } from "@/lib/supabase"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+
+// Mock data for bug reports
+const mockReports = [
+  {
+    id: "1",
+    username: "DragonSlayer123",
+    category: "enchantments",
+    description:
+      "Veinminer enchantment is not working properly on diamond ore blocks. When I mine one block, it should mine the entire vein, but it only mines 2-3 blocks at most.",
+    location: "Survival world, mining level around Y=12",
+    status: "pending",
+    priority: "medium",
+    created_at: new Date().toISOString(),
+    assigned_to: null,
+  },
+  {
+    id: "2",
+    username: "LandLord55",
+    category: "lands",
+    description:
+      "Unable to declare war on another land. When I use the /lands war declare command, it says 'You cannot declare war on this land' even though we're not allies.",
+    location: "Main survival server",
+    status: "in-progress",
+    priority: "high",
+    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    assigned_to: null,
+  },
+  {
+    id: "3",
+    username: "SkillMaster",
+    category: "valhalla",
+    description:
+      "ValhallaMMO skill points are not applying correctly. I allocated 3 points to the Mining skill tree, but only 1 point seems to be taking effect.",
+    location: "Character skill menu",
+    status: "resolved",
+    priority: "medium",
+    created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+    assigned_to: null,
+  },
+]
 
 export default function BugReportsPage() {
-  const [reports, setReports] = useState<BugReport[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
+  const [reports, setReports] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedReport, setSelectedReport] = useState<BugReport | null>(null)
+  const [selectedReport, setSelectedReport] = useState<any | null>(null)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [responseDialogOpen, setResponseDialogOpen] = useState(false)
   const [response, setResponse] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isInitializing, setIsInitializing] = useState(false)
+  const [initSuccess, setInitSuccess] = useState(false)
 
-  // Fetch bug reports and staff data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch bug reports
-        const { data: reportsData, error: reportsError } = await supabase
-          .from("bug_reports")
-          .select("*")
-          .order("created_at", { ascending: false })
+  // Function to initialize the database
+  const initializeDatabase = async () => {
+    try {
+      setIsInitializing(true)
+      setError(null)
 
-        if (reportsError) {
-          throw reportsError
-        }
+      const response = await fetch("/api/init-database", {
+        method: "POST",
+      })
 
-        setReports(reportsData || [])
-
-        // Fetch staff for assignment dropdown
-        const { data: staffData, error: staffError } = await supabase.from("staff").select("id, username, role")
-
-        if (staffError) {
-          throw staffError
-        }
-
-        setStaff(staffData || [])
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch data")
-      } finally {
-        setIsLoading(false)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to initialize database")
       }
-    }
 
-    fetchData()
+      setInitSuccess(true)
+      fetchReports() // Fetch reports after initializing
+    } catch (err: any) {
+      console.error("Error initializing database:", err)
+      setError(err.message || "Failed to initialize database")
+    } finally {
+      setIsInitializing(false)
+    }
+  }
+
+  // Function to fetch bug reports
+  const fetchReports = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      // Try to fetch from Supabase
+      if (supabase) {
+        const { data, error } = await supabase.from("bug_reports").select("*").order("created_at", { ascending: false })
+
+        if (error) {
+          if (error.message.includes("does not exist")) {
+            // Table doesn't exist, use mock data
+            console.log("Bug reports table doesn't exist, using mock data")
+            setReports(mockReports)
+          } else {
+            throw error
+          }
+        } else {
+          // Use real data if available
+          setReports(data || [])
+        }
+      } else {
+        // Fallback to mock data if Supabase is not available
+        setReports(mockReports)
+      }
+    } catch (err: any) {
+      console.error("Error fetching bug reports:", err)
+      setError(err.message || "Failed to fetch bug reports")
+      // Use mock data as fallback
+      setReports(mockReports)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Fetch bug reports on component mount
+  useEffect(() => {
+    fetchReports()
   }, [])
 
   const filteredReports = reports.filter((report) => {
@@ -86,57 +158,66 @@ export default function BugReportsPage() {
     return true
   })
 
-  const handleViewReport = (report: BugReport) => {
+  const handleViewReport = (report: any) => {
     setSelectedReport(report)
     setViewDialogOpen(true)
   }
 
-  const handleRespondToReport = (report: BugReport) => {
+  const handleRespondToReport = (report: any) => {
     setSelectedReport(report)
     setResponseDialogOpen(true)
   }
 
-  const handleUpdateStatus = async (reportId: string, newStatus: "pending" | "in-progress" | "resolved") => {
+  const handleUpdateStatus = async (reportId: string, newStatus: string) => {
     try {
-      const { error } = await supabase.from("bug_reports").update({ status: newStatus }).eq("id", reportId)
+      if (supabase) {
+        const { error } = await supabase.from("bug_reports").update({ status: newStatus }).eq("id", reportId)
 
-      if (error) {
-        throw error
+        if (error) {
+          throw error
+        }
       }
 
       // Update local state
       setReports(reports.map((report) => (report.id === reportId ? { ...report, status: newStatus } : report)))
     } catch (err: any) {
+      console.error("Error updating status:", err)
       setError(err.message || "Failed to update status")
     }
   }
 
   const handleAssignReport = async (reportId: string, staffId: string | null) => {
     try {
-      const { error } = await supabase.from("bug_reports").update({ assigned_to: staffId }).eq("id", reportId)
+      if (supabase) {
+        const { error } = await supabase.from("bug_reports").update({ assigned_to: staffId }).eq("id", reportId)
 
-      if (error) {
-        throw error
+        if (error) {
+          throw error
+        }
       }
 
       // Update local state
       setReports(reports.map((report) => (report.id === reportId ? { ...report, assigned_to: staffId } : report)))
     } catch (err: any) {
+      console.error("Error assigning report:", err)
       setError(err.message || "Failed to assign report")
     }
   }
 
-  const handleUpdatePriority = async (reportId: string, priority: "low" | "medium" | "high" | "critical") => {
+  const handleUpdatePriority = async (reportId: string, priority: string) => {
     try {
-      const { error } = await supabase.from("bug_reports").update({ priority }).eq("id", reportId)
+      if (supabase) {
+        const { error } = await supabase.from("bug_reports").update({ priority }).eq("id", reportId)
 
-      if (error) {
-        throw error
+        if (error) {
+          throw error
+        }
       }
 
       // Update local state
       setReports(reports.map((report) => (report.id === reportId ? { ...report, priority } : report)))
     } catch (err: any) {
+      console.error("Error updating priority:", err)
       setError(err.message || "Failed to update priority")
     }
   }
@@ -155,6 +236,7 @@ export default function BugReportsPage() {
       setResponseDialogOpen(false)
       setResponse("")
     } catch (err: any) {
+      console.error("Error submitting response:", err)
       setError(err.message || "Failed to submit response")
     }
   }
@@ -206,8 +288,18 @@ export default function BugReportsPage() {
 
   const getAssignedStaffName = (staffId: string | null) => {
     if (!staffId) return "Unassigned"
-    const staffMember = staff.find((s) => s.id === staffId)
-    return staffMember ? staffMember.username : "Unknown"
+
+    // Map staff IDs to names (in a real app, this would come from the database)
+    const staffMap: Record<string, string> = {
+      "1": "Ribkid",
+      "2": "Zaqweds",
+      "3": "Casuistry",
+      "4": "Okgreyy",
+      "5": "Purplesheepliv",
+      "6": "Acalrhys",
+    }
+
+    return staffMap[staffId] || "Unknown"
   }
 
   if (isLoading) {
@@ -229,6 +321,19 @@ export default function BugReportsPage() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
+          {error.includes("does not exist") && (
+            <Button variant="outline" size="sm" className="mt-2" onClick={initializeDatabase} disabled={isInitializing}>
+              {isInitializing ? "Initializing..." : "Initialize Database"}
+            </Button>
+          )}
+        </Alert>
+      )}
+
+      {initSuccess && (
+        <Alert className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+          <CheckCircle className="h-4 w-4" />
+          <AlertTitle>Database Initialized</AlertTitle>
+          <AlertDescription>The bug reports table has been created successfully.</AlertDescription>
         </Alert>
       )}
 
@@ -254,13 +359,21 @@ export default function BugReportsPage() {
               <SelectItem value="resolved">Resolved</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="icon" onClick={fetchReports} title="Refresh">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Bug Reports</CardTitle>
-          <CardDescription>Manage and respond to bug reports submitted by users.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Bug Reports</CardTitle>
+            <CardDescription>Manage and respond to bug reports submitted by users.</CardDescription>
+          </div>
+          <Button variant="outline" onClick={initializeDatabase} disabled={isInitializing}>
+            {isInitializing ? "Initializing..." : "Initialize Database"}
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -287,7 +400,9 @@ export default function BugReportsPage() {
                 ) : (
                   filteredReports.map((report) => (
                     <tr key={report.id} className="border-b hover:bg-muted/50">
-                      <td className="p-2 pl-4 font-medium">#{report.id.substring(0, 8)}</td>
+                      <td className="p-2 pl-4 font-medium">
+                        #{typeof report.id === "string" ? report.id.substring(0, 8) : report.id}
+                      </td>
                       <td className="p-2">{report.username}</td>
                       <td className="p-2 capitalize">{report.category}</td>
                       <td className="p-2">{getStatusBadge(report.status)}</td>
@@ -333,14 +448,24 @@ export default function BugReportsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuLabel>Assign To</DropdownMenuLabel>
-                            {staff.map((staffMember) => (
-                              <DropdownMenuItem
-                                key={staffMember.id}
-                                onClick={() => handleAssignReport(report.id, staffMember.id)}
-                              >
-                                {staffMember.username}
-                              </DropdownMenuItem>
-                            ))}
+                            <DropdownMenuItem onClick={() => handleAssignReport(report.id, "1")}>
+                              Ribkid
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAssignReport(report.id, "2")}>
+                              Zaqweds
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAssignReport(report.id, "3")}>
+                              Casuistry
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAssignReport(report.id, "4")}>
+                              Okgreyy
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAssignReport(report.id, "5")}>
+                              Purplesheepliv
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAssignReport(report.id, "6")}>
+                              Acalrhys
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleAssignReport(report.id, null)}>
                               Unassign
                             </DropdownMenuItem>
@@ -360,7 +485,9 @@ export default function BugReportsPage() {
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Bug Report #{selectedReport?.id.substring(0, 8)}</DialogTitle>
+            <DialogTitle>
+              Bug Report #{selectedReport?.id.substring ? selectedReport?.id.substring(0, 8) : selectedReport?.id}
+            </DialogTitle>
             <DialogDescription>
               Submitted by {selectedReport?.username} on {selectedReport && formatDate(selectedReport.created_at)}
             </DialogDescription>
@@ -413,7 +540,10 @@ export default function BugReportsPage() {
       <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Respond to Bug Report #{selectedReport?.id.substring(0, 8)}</DialogTitle>
+            <DialogTitle>
+              Respond to Bug Report #
+              {selectedReport?.id.substring ? selectedReport?.id.substring(0, 8) : selectedReport?.id}
+            </DialogTitle>
             <DialogDescription>
               Send a response to {selectedReport?.username} regarding their bug report.
             </DialogDescription>

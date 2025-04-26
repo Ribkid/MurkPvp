@@ -2,49 +2,96 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle2, AlertTriangle } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { toast } from "@/components/ui/use-toast"
+import { AlertCircle, Save } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function SettingsPage() {
-  const [saved, setSaved] = useState(false)
-  const [settings, setSettings] = useState({
-    siteName: "MurkCraft Wiki",
-    siteDescription: "Official wiki for the MurkCraft Minecraft server",
-    contactEmail: "admin@murkcraft.com",
-    discordLink: "https://discord.gg/murkcraft",
-    enableReporting: true,
-    requireLogin: false,
-    moderationLevel: "medium",
-    customCSS: "",
-    maintenanceMode: false,
-    maintenanceMessage: "The wiki is currently undergoing maintenance. Please check back later.",
-  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSaveSettings = () => {
-    // In a real app, this would send the settings to the server
-    console.log("Saving settings:", settings)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  // General settings
+  const [siteName, setSiteName] = useState("MurkCraft Wiki")
+  const [siteDescription, setSiteDescription] = useState("Official wiki for the MurkCraft Minecraft server")
+  const [contactEmail, setContactEmail] = useState("admin@murkcraft.com")
+
+  // Appearance settings
+  const [customCSS, setCustomCSS] = useState("")
+  const [darkModeDefault, setDarkModeDefault] = useState(false)
+  const [accentColor, setAccentColor] = useState("#7c3aed")
+
+  // Moderation settings
+  const [enableBugReporting, setEnableBugReporting] = useState(true)
+  const [requireLogin, setRequireLogin] = useState(false)
+  const [moderationLevel, setModerationLevel] = useState([2])
+
+  // Maintenance settings
+  const [maintenanceMode, setMaintenanceMode] = useState(false)
+  const [maintenanceMessage, setMaintenanceMessage] = useState(
+    "The wiki is currently undergoing maintenance. Please check back later.",
+  )
+
+  const handleSave = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // In a real app, this would save to a database
+      // For now, we'll just simulate a delay and show a success message
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Log the settings that would be saved
+      console.log({
+        general: {
+          siteName,
+          siteDescription,
+          contactEmail,
+        },
+        appearance: {
+          customCSS,
+          darkModeDefault,
+          accentColor,
+        },
+        moderation: {
+          enableBugReporting,
+          requireLogin,
+          moderationLevel: moderationLevel[0],
+        },
+        maintenance: {
+          maintenanceMode,
+          maintenanceMessage,
+        },
+      })
+
+      toast({
+        title: "Settings saved",
+        description: "Your changes have been saved successfully.",
+      })
+    } catch (err: any) {
+      setError(err.message || "Failed to save settings")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your wiki settings and configurations.</p>
+        <p className="text-muted-foreground">Manage your wiki settings and preferences.</p>
       </div>
 
-      {saved && (
-        <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900">
-          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription>Settings saved successfully!</AlertDescription>
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
@@ -55,27 +102,24 @@ export default function SettingsPage() {
           <TabsTrigger value="moderation">Moderation</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
         </TabsList>
+
         <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
-              <CardDescription>Configure general settings for your wiki.</CardDescription>
+              <CardDescription>Configure basic settings for your wiki.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="siteName">Site Name</Label>
-                <Input
-                  id="siteName"
-                  value={settings.siteName}
-                  onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-                />
+                <Input id="siteName" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="siteDescription">Site Description</Label>
                 <Textarea
                   id="siteDescription"
-                  value={settings.siteDescription}
-                  onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
+                  value={siteDescription}
+                  onChange={(e) => setSiteDescription(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -83,141 +127,176 @@ export default function SettingsPage() {
                 <Input
                   id="contactEmail"
                   type="email"
-                  value={settings.contactEmail}
-                  onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="discordLink">Discord Link</Label>
-                <Input
-                  id="discordLink"
-                  value={settings.discordLink}
-                  onChange={(e) => setSettings({ ...settings, discordLink: e.target.value })}
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
                 />
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
+              <Button onClick={handleSave} disabled={isLoading}>
+                {isLoading ? (
+                  <>Saving...</>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
+
         <TabsContent value="appearance" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Appearance Settings</CardTitle>
-              <CardDescription>Customize the appearance of your wiki.</CardDescription>
+              <CardDescription>Customize the look and feel of your wiki.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="customCSS">Custom CSS</Label>
                 <Textarea
                   id="customCSS"
-                  value={settings.customCSS}
-                  onChange={(e) => setSettings({ ...settings, customCSS: e.target.value })}
-                  className="font-mono"
-                  rows={10}
+                  value={customCSS}
+                  onChange={(e) => setCustomCSS(e.target.value)}
                   placeholder="/* Add your custom CSS here */"
+                  className="font-mono"
+                  rows={8}
                 />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch id="darkMode" checked={darkModeDefault} onCheckedChange={setDarkModeDefault} />
+                <Label htmlFor="darkMode">Use Dark Mode as Default</Label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="accentColor">Accent Color</Label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    id="accentColor"
+                    type="color"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-12 h-8 p-1"
+                  />
+                  <Input value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="flex-1" />
+                </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
+              <Button onClick={handleSave} disabled={isLoading}>
+                {isLoading ? (
+                  <>Saving...</>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
+
         <TabsContent value="moderation" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Moderation Settings</CardTitle>
-              <CardDescription>Configure moderation settings for your wiki.</CardDescription>
+              <CardDescription>Configure moderation and user interaction settings.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="enableReporting">Enable Bug Reporting</Label>
-                  <p className="text-sm text-muted-foreground">Allow users to submit bug reports through the wiki.</p>
-                </div>
-                <Switch
-                  id="enableReporting"
-                  checked={settings.enableReporting}
-                  onCheckedChange={(checked) => setSettings({ ...settings, enableReporting: checked })}
-                />
+              <div className="flex items-center space-x-2">
+                <Switch id="enableReporting" checked={enableBugReporting} onCheckedChange={setEnableBugReporting} />
+                <Label htmlFor="enableReporting">Enable Bug Reporting</Label>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="requireLogin">Require Login for Reporting</Label>
-                  <p className="text-sm text-muted-foreground">Require users to be logged in to submit bug reports.</p>
-                </div>
-                <Switch
-                  id="requireLogin"
-                  checked={settings.requireLogin}
-                  onCheckedChange={(checked) => setSettings({ ...settings, requireLogin: checked })}
-                />
+              <p className="text-sm text-muted-foreground">Allow users to submit bug reports through the wiki.</p>
+
+              <div className="flex items-center space-x-2 pt-4">
+                <Switch id="requireLogin" checked={requireLogin} onCheckedChange={setRequireLogin} />
+                <Label htmlFor="requireLogin">Require Login for Bug Reports</Label>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="moderationLevel">Moderation Level</Label>
-                <Select
-                  value={settings.moderationLevel}
-                  onValueChange={(value) => setSettings({ ...settings, moderationLevel: value })}
-                >
-                  <SelectTrigger id="moderationLevel">
-                    <SelectValue placeholder="Select moderation level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low - Minimal moderation</SelectItem>
-                    <SelectItem value="medium">Medium - Standard moderation</SelectItem>
-                    <SelectItem value="high">High - Strict moderation</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">Set the level of moderation for user-submitted content.</p>
+              <p className="text-sm text-muted-foreground">Users must be logged in to submit bug reports.</p>
+
+              <div className="space-y-2 pt-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="moderationLevel">Moderation Level</Label>
+                  <span className="text-sm">
+                    {moderationLevel[0] === 0
+                      ? "None"
+                      : moderationLevel[0] === 1
+                        ? "Low"
+                        : moderationLevel[0] === 2
+                          ? "Medium"
+                          : moderationLevel[0] === 3
+                            ? "High"
+                            : "Very High"}
+                  </span>
+                </div>
+                <Slider
+                  id="moderationLevel"
+                  min={0}
+                  max={4}
+                  step={1}
+                  value={moderationLevel}
+                  onValueChange={setModerationLevel}
+                  className="py-4"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Controls how strictly bug reports are moderated before being visible to staff.
+                </p>
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
+              <Button onClick={handleSave} disabled={isLoading}>
+                {isLoading ? (
+                  <>Saving...</>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
+
         <TabsContent value="maintenance" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Maintenance Mode</CardTitle>
-              <CardDescription>Configure maintenance mode settings for your wiki.</CardDescription>
+              <CardDescription>Configure maintenance mode settings.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="maintenanceMode">Enable Maintenance Mode</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Put the wiki into maintenance mode, showing a message to users.
-                  </p>
-                </div>
-                <Switch
-                  id="maintenanceMode"
-                  checked={settings.maintenanceMode}
-                  onCheckedChange={(checked) => setSettings({ ...settings, maintenanceMode: checked })}
+              <div className="flex items-center space-x-2">
+                <Switch id="maintenanceMode" checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
+                <Label htmlFor="maintenanceMode">Enable Maintenance Mode</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                When enabled, the wiki will display a maintenance message to all users except administrators.
+              </p>
+
+              <div className="space-y-2 pt-4">
+                <Label htmlFor="maintenanceMessage">Maintenance Message</Label>
+                <Textarea
+                  id="maintenanceMessage"
+                  value={maintenanceMessage}
+                  onChange={(e) => setMaintenanceMessage(e.target.value)}
+                  rows={4}
                 />
               </div>
-              {settings.maintenanceMode && (
-                <div className="space-y-2">
-                  <Label htmlFor="maintenanceMessage">Maintenance Message</Label>
-                  <Textarea
-                    id="maintenanceMessage"
-                    value={settings.maintenanceMessage}
-                    onChange={(e) => setSettings({ ...settings, maintenanceMessage: e.target.value })}
-                    rows={3}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    This message will be displayed to users when maintenance mode is enabled.
-                  </p>
-                </div>
-              )}
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="flex items-center text-amber-600">
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                <span className="text-sm">Enabling maintenance mode will restrict access to the wiki.</span>
-              </div>
-              <Button onClick={handleSaveSettings}>Save Changes</Button>
+            <CardFooter>
+              <Button onClick={handleSave} disabled={isLoading}>
+                {isLoading ? (
+                  <>Saving...</>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>

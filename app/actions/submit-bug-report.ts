@@ -1,40 +1,92 @@
 "use server"
 
 import { supabase } from "@/lib/supabase"
+import { addBugReportToRedis } from "@/lib/redis"
 
-type BugReportData = {
-  username: string
-  category: string
-  description: string
-  location?: string
-}
-
-export async function submitBugReport(data: BugReportData) {
+export async function submitBugReport(formData: FormData) {
   try {
-    // Check if Supabase is available
-    if (!supabase) {
-      console.error("Supabase client not initialized")
-      return { success: false, error: "Database connection not available" }
+    // Extract form data
+    const username = formData.get("username") as string
+    const email = formData.get("email") as string
+    const category = formData.get("category") as string
+    const description = formData.get("description") as string
+    const stepsToReproduce = formData.get("stepsToReproduce") as string
+    const expectedBehavior = formData.get("expectedBehavior") as string
+    const actualBehavior = formData.get("actualBehavior") as string
+
+    // Create bug report object
+    const bugReport = {
+      username,
+      email,
+      category,
+      description,
+      steps_to_reproduce: stepsToReproduce,
+      expected_behavior: expectedBehavior,
+      actual_behavior: actualBehavior,
+      status: "open",
+      created_at: new Date().toISOString(),
     }
 
-    // Try to insert the bug report
-    const { error } = await supabase.from("bug_reports").insert({
-      username: data.username,
-      category: data.category,
-      description: data.description,
-      location: data.location || null,
-      status: "pending",
-      priority: "medium",
-    })
+    // Try to submit to Supabase
+    let supabaseSuccess = false
+    let supabaseError = null
+    let reportId = null
 
-    if (error) {
-      console.error("Error submitting bug report:", error)
-      return { success: false, error: error.message }
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from("bug_reports").insert(bugReport).select()
+
+        if (error) {
+          throw error
+        }
+
+        supabaseSuccess = true
+        reportId = data?.[0]?.id
+      } catch (error: any) {
+        console.error("Error submitting bug report to Supabase:", error)
+        supabaseError = error.message
+      }
     }
 
-    return { success: true }
-  } catch (err: any) {
-    console.error("Exception in submitBugReport:", err)
-    return { success: false, error: err.message || "An unexpected error occurred" }
+    // Try to submit to Redis
+    let redisSuccess = false
+    let redisError = null
+
+    try {
+      const redisReportId = await addBugReportToRedis({
+        ...bugReport,
+        id: reportId, // Use the Supabase ID if available
+      })
+
+      redisSuccess = !!redisReportId
+    } catch (error: any) {
+      console.error("Error submitting bug report to Redis:", error)
+      redisError = error.message
+    }
+
+    // Return result
+    if (supabaseSuccess || redisSuccess) {
+      return {
+        success: true,
+        message: "Bug report submitted successfully",
+        supabaseSuccess,
+        redisSuccess,
+        reportId,
+      }
+    } else {
+      return {
+        success: false,
+        message: "Failed to submit bug report",
+        supabaseError,
+        redisError,
+      }
+    }
+  } catch (error: any) {
+    console.error("Error in submitBugReport:", error)
+    return {
+      success: false,
+      message: "An unexpected error occurred",
+      error: error.message,
+    }
   }
 }

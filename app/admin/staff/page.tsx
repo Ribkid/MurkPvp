@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Search, UserPlus, Shield, ShieldCheck, ShieldAlert } from "lucide-react"
+import { MoreHorizontal, Search, UserPlus, Shield, ShieldCheck, ShieldAlert, Crown } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,46 +24,75 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { supabase } from "@/lib/supabase"
-import type { Staff } from "@/lib/supabase"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 
+// Predefined staff members
+const predefinedStaff = [
+  {
+    id: "1",
+    username: "Ribkid",
+    email: "ribkid@murkcraft.com",
+    role: "owner",
+    created_at: "2022-01-01T00:00:00Z",
+    last_sign_in: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    username: "Zaqweds",
+    email: "zaqweds@murkcraft.com",
+    role: "co-owner",
+    created_at: "2022-01-02T00:00:00Z",
+    last_sign_in: new Date().toISOString(),
+  },
+  {
+    id: "3",
+    username: "Casuistry",
+    email: "casuistry@murkcraft.com",
+    role: "co-owner",
+    created_at: "2022-01-03T00:00:00Z",
+    last_sign_in: new Date().toISOString(),
+  },
+  {
+    id: "4",
+    username: "Okgreyy",
+    email: "okgreyy@murkcraft.com",
+    role: "admin",
+    created_at: "2022-01-04T00:00:00Z",
+    last_sign_in: new Date().toISOString(),
+  },
+  {
+    id: "5",
+    username: "Purplesheepliv",
+    email: "purplesheepliv@murkcraft.com",
+    role: "admin",
+    created_at: "2022-01-05T00:00:00Z",
+    last_sign_in: new Date().toISOString(),
+  },
+  {
+    id: "6",
+    username: "Acalrhys",
+    email: "acalrhys@gmail.com",
+    role: "admin",
+    created_at: "2022-01-06T00:00:00Z",
+    last_sign_in: new Date().toISOString(),
+  },
+]
+
 export default function StaffManagementPage() {
-  const [staff, setStaff] = useState<Staff[]>([])
+  const [staff, setStaff] = useState(predefinedStaff)
   const [searchQuery, setSearchQuery] = useState("")
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [selectedStaff, setSelectedStaff] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [newStaff, setNewStaff] = useState({
     username: "",
-    role: "helper" as "admin" | "moderator" | "helper",
+    role: "admin" as "owner" | "co-owner" | "admin" | "moderator" | "helper",
     email: "",
     password: "",
   })
-
-  // Fetch staff data
-  useEffect(() => {
-    const fetchStaff = async () => {
-      try {
-        const { data, error } = await supabase.from("staff").select("*").order("created_at", { ascending: false })
-
-        if (error) {
-          throw error
-        }
-
-        setStaff(data || [])
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch staff data")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchStaff()
-  }, [])
 
   const filteredStaff = staff.filter((member) => {
     if (searchQuery) {
@@ -77,133 +106,63 @@ export default function StaffManagementPage() {
     return true
   })
 
-  const handleAddStaff = async () => {
-    try {
-      setError("")
+  const handleAddStaff = () => {
+    // Generate a unique ID
+    const newId = (Math.max(...staff.map((s) => Number.parseInt(s.id))) + 1).toString()
 
-      // Create user in Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: newStaff.email,
-        password: newStaff.password,
-        options: {
-          data: {
-            username: newStaff.username,
-            role: newStaff.role,
-          },
-        },
-      })
-
-      if (error) {
-        throw error
-      }
-
-      if (data.user) {
-        // Add user to staff table
-        const { error: insertError } = await supabase.from("staff").insert({
-          id: data.user.id,
-          username: newStaff.username,
-          email: newStaff.email,
-          role: newStaff.role,
-          created_at: new Date().toISOString(),
-        })
-
-        if (insertError) {
-          throw insertError
-        }
-
-        // Refresh staff list
-        const { data: updatedStaff } = await supabase
-          .from("staff")
-          .select("*")
-          .order("created_at", { ascending: false })
-
-        setStaff(updatedStaff || [])
-
-        // Reset form and close dialog
-        setNewStaff({
-          username: "",
-          role: "helper",
-          email: "",
-          password: "",
-        })
-        setAddDialogOpen(false)
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to add staff member")
+    // Create new staff member
+    const newStaffMember = {
+      id: newId,
+      username: newStaff.username,
+      email: newStaff.email,
+      role: newStaff.role,
+      created_at: new Date().toISOString(),
+      last_sign_in: null,
     }
+
+    // Add to staff list
+    setStaff([...staff, newStaffMember])
+
+    // Reset form and close dialog
+    setNewStaff({
+      username: "",
+      role: "admin",
+      email: "",
+      password: "",
+    })
+    setAddDialogOpen(false)
   }
 
-  const handleEditStaff = async () => {
+  const handleEditStaff = () => {
     if (!selectedStaff) return
 
-    try {
-      setError("")
-
-      // Update staff in database
-      const { error } = await supabase
-        .from("staff")
-        .update({
-          username: selectedStaff.username,
-          email: selectedStaff.email,
-          role: selectedStaff.role,
-        })
-        .eq("id", selectedStaff.id)
-
-      if (error) {
-        throw error
-      }
-
-      // Refresh staff list
-      const { data: updatedStaff } = await supabase.from("staff").select("*").order("created_at", { ascending: false })
-
-      setStaff(updatedStaff || [])
-      setEditDialogOpen(false)
-    } catch (err: any) {
-      setError(err.message || "Failed to update staff member")
-    }
+    // Update staff member
+    setStaff(staff.map((member) => (member.id === selectedStaff.id ? selectedStaff : member)))
+    setEditDialogOpen(false)
   }
 
-  const handleDeleteStaff = async (id: string) => {
-    try {
-      setError("")
-
-      // Delete from staff table
-      const { error } = await supabase.from("staff").delete().eq("id", id)
-
-      if (error) {
-        throw error
-      }
-
-      // Remove from auth (in a real app, you'd use admin functions for this)
-      // This is simplified for demo purposes
-
-      // Update staff list
-      setStaff(staff.filter((member) => member.id !== id))
-    } catch (err: any) {
-      setError(err.message || "Failed to delete staff member")
+  const handleDeleteStaff = (id: string) => {
+    // Don't allow deletion of predefined staff
+    if (Number.parseInt(id) <= 6) {
+      setError("Cannot delete predefined staff members")
+      return
     }
+
+    // Remove from staff list
+    setStaff(staff.filter((member) => member.id !== id))
   }
 
-  const handleChangeRole = async (member: Staff, newRole: "admin" | "moderator" | "helper") => {
-    try {
-      setError("")
-
-      // Update role in database
-      const { error } = await supabase.from("staff").update({ role: newRole }).eq("id", member.id)
-
-      if (error) {
-        throw error
-      }
-
-      // Update local state
-      setStaff(staff.map((m) => (m.id === member.id ? { ...m, role: newRole } : m)))
-    } catch (err: any) {
-      setError(err.message || "Failed to update role")
-    }
+  const handleChangeRole = (member: any, newRole: "owner" | "co-owner" | "admin" | "moderator" | "helper") => {
+    // Update role
+    setStaff(staff.map((m) => (m.id === member.id ? { ...m, role: newRole } : m)))
   }
 
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case "owner":
+        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">Owner</Badge>
+      case "co-owner":
+        return <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">Co-Owner</Badge>
       case "admin":
         return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Admin</Badge>
       case "moderator":
@@ -217,6 +176,10 @@ export default function StaffManagementPage() {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
+      case "owner":
+        return <Crown className="h-4 w-4 mr-2" />
+      case "co-owner":
+        return <Crown className="h-4 w-4 mr-2" />
       case "admin":
         return <ShieldAlert className="h-4 w-4 mr-2" />
       case "moderator":
@@ -323,9 +286,26 @@ export default function StaffManagementPage() {
                             >
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteStaff(member.id)}>Delete</DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteStaff(member.id)}
+                              disabled={Number.parseInt(member.id) <= 6}
+                            >
+                              Delete
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => handleChangeRole(member, "owner")}
+                              disabled={Number.parseInt(member.id) !== 1}
+                            >
+                              <Crown className="mr-2 h-4 w-4" /> Make Owner
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleChangeRole(member, "co-owner")}
+                              disabled={Number.parseInt(member.id) <= 1}
+                            >
+                              <Crown className="mr-2 h-4 w-4" /> Make Co-Owner
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleChangeRole(member, "admin")}>
                               <ShieldAlert className="mr-2 h-4 w-4" /> Make Admin
                             </DropdownMenuItem>
@@ -396,7 +376,9 @@ export default function StaffManagementPage() {
               </Label>
               <Select
                 value={newStaff.role}
-                onValueChange={(value: "admin" | "moderator" | "helper") => setNewStaff({ ...newStaff, role: value })}
+                onValueChange={(value: "owner" | "co-owner" | "admin" | "moderator" | "helper") =>
+                  setNewStaff({ ...newStaff, role: value })
+                }
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select a role" />
@@ -436,6 +418,7 @@ export default function StaffManagementPage() {
                   value={selectedStaff.username}
                   onChange={(e) => setSelectedStaff({ ...selectedStaff, username: e.target.value })}
                   className="col-span-3"
+                  disabled={Number.parseInt(selectedStaff.id) <= 6}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -448,6 +431,7 @@ export default function StaffManagementPage() {
                   value={selectedStaff.email}
                   onChange={(e) => setSelectedStaff({ ...selectedStaff, email: e.target.value })}
                   className="col-span-3"
+                  disabled={Number.parseInt(selectedStaff.id) <= 6}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -456,17 +440,22 @@ export default function StaffManagementPage() {
                 </Label>
                 <Select
                   value={selectedStaff.role}
-                  onValueChange={(value: "admin" | "moderator" | "helper") =>
+                  onValueChange={(value: "owner" | "co-owner" | "admin" | "moderator" | "helper") =>
                     setSelectedStaff({
                       ...selectedStaff,
                       role: value,
                     })
                   }
+                  disabled={Number.parseInt(selectedStaff.id) === 1}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
+                    {Number.parseInt(selectedStaff.id) === 1 && <SelectItem value="owner">Owner</SelectItem>}
+                    {(Number.parseInt(selectedStaff.id) === 2 || Number.parseInt(selectedStaff.id) === 3) && (
+                      <SelectItem value="co-owner">Co-Owner</SelectItem>
+                    )}
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="moderator">Moderator</SelectItem>
                     <SelectItem value="helper">Helper</SelectItem>
