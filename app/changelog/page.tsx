@@ -30,8 +30,50 @@ export default function ChangelogPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Server Update - April 2025</CardTitle>
+                <CardTitle>Network Update - May 2025</CardTitle>
                 <Badge>Latest</Badge>
+              </div>
+              <CardDescription>Released on May 1, 2025</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Skyblock Updates</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>
+                    Fixed salvage duplication exploit (temporarily removed salvage feature - more updates coming soon)
+                  </li>
+                  <li>Fixed two Duke boss bugs</li>
+                  <li>Fixed emissions issues on Skyloft</li>
+                  <li>Re-added minions to Skyblock</li>
+                  <li>Re-added cell ones to Skyblock (will be fully configured in the coming days)</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium mb-2">Cross-Server Features</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Added cross-server speech functionality</li>
+                  <li>Implemented cross-server messaging system</li>
+                  <li>Added cross-server teleportation</li>
+                  <li>Introduced cross-server portals for seamless travel</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium mb-2">Network Expansion</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>Added a new partner server to the MurkCraft Network</li>
+                  <li>All MurkCraft players are welcome to join this new server</li>
+                  <li>This expansion aims to bring more players to the MurkCraft Network</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Server Update - April 2025</CardTitle>
               </div>
               <CardDescription>Released on April 22, 2025</CardDescription>
             </CardHeader>
@@ -105,104 +147,52 @@ export default function ChangelogPage() {
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Server Update v3.4.2</CardTitle>
-              </div>
-              <CardDescription>Released on September 28, 2023</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium mb-2">Bug Fixes</h3>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Fixed server lag issues related to item entity processing</li>
-                  <li>Resolved conflict between ValhallaMMO and ItemsAdder custom items</li>
-                  <li>Fixed issue with Lands war system not properly ending wars</li>
-                  <li>Corrected permission inheritance for certain player ranks</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium mb-2">Minor Changes</h3>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Updated server to Minecraft 1.20.2</li>
-                  <li>Optimized database queries for better performance</li>
-                  <li>Adjusted spawn rates in custom dimensions</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="major" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Major Update: The Nether Expansion</CardTitle>
-                <Badge variant="outline">v3.0.0</Badge>
-              </div>
-              <CardDescription>Released on July 15, 2023</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium mb-2">Major Features</h3>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Complete overhaul of the Nether dimension with custom biomes</li>
-                  <li>Added 5 new boss fights with unique mechanics</li>
-                  <li>Introduced Nether-specific ValhallaMMO skill tree</li>
-                  <li>Added 20+ new custom items and weapons</li>
-                  <li>Implemented new progression system for end-game content</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium mb-2">System Changes</h3>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Updated server to Minecraft 1.20</li>
-                  <li>Migrated to new database system for better performance</li>
-                  <li>Implemented new anti-cheat measures</li>
-                  <li>Overhauled permission system for more granular control</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Major Update: The Great Reset</CardTitle>
-                <Badge variant="outline">v2.0.0</Badge>
-              </div>
-              <CardDescription>Released on January 10, 2023</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium mb-2">Major Features</h3>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Complete server reset with new world generation</li>
-                  <li>Implemented ValhallaMMO as the core progression system</li>
-                  <li>Added custom enchantments system</li>
-                  <li>Introduced Lands plugin for land claiming and protection</li>
-                  <li>Added MythicMobs with custom mob spawning</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium mb-2">System Changes</h3>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Updated server to Minecraft 1.19.3</li>
-                  <li>Implemented new economy system</li>
-                  <li>Added custom crafting recipes</li>
-                  <li>Introduced player shops system</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              No major updates are currently listed. Check back soon for future major updates.
+            </p>
+          </div>
         </TabsContent>
 
         <TabsContent value="coming-soon" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Coming Soon: Skyblock Expansion</CardTitle>
+                <Badge variant="outline">In Development</Badge>
+              </div>
+              <CardDescription>Expected release: May 2025</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">New Skyblock Features</h3>
+                <p className="mb-4">The Skyblock server will be receiving major updates in the coming days to weeks:</p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>New dungeons with unique challenges and rewards</li>
+                  <li>New boss encounters with special mechanics</li>
+                  <li>
+                    New arena system with tiered difficulty levels:
+                    <ul className="list-disc pl-6 mt-1">
+                      <li>Low-level mythic mobs for beginners</li>
+                      <li>Medium-level mythic mobs for experienced players</li>
+                      <li>High-level mythic mobs for endgame challenges</li>
+                    </ul>
+                  </li>
+                  <li>
+                    New currency: Mythic Coins
+                    <ul className="list-disc pl-6 mt-1">
+                      <li>Earned by defeating mythic mobs in the arena</li>
+                      <li>Used to purchase exclusive items from the Mythic Coin Shop</li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
